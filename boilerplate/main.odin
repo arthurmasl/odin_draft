@@ -27,6 +27,8 @@ main :: proc() {
     update()
     draw()
   }
+
+  defer rl.CloseWindow()
 }
 
 update :: proc() {
