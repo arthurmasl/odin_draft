@@ -9,7 +9,7 @@ uniform vec2 resolution;
 uniform float time;
 
 void main() {
-  // vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / resolution.y;
+    vec2 st = gl_FragCoord.xy / resolution;
 
-  finalColor = vec4(0.0, 0.0, 0.0, 1.0);
-}    
+    finalColor = vec4(st, abs(cos(time)), 1.0);
+}
