@@ -101,12 +101,11 @@ update :: proc() {
   player.angle = -rl.Vector2LineAngle(center, rl.GetMousePosition())
 
   camera.target = player.pos
-  camera.position = {player.pos.x, player.pos.y + 40, player.pos.z + 50}
+  camera.position = {player.pos.x, player.pos.y + 20, player.pos.z + 50}
+
+  // rl.UpdateCamera(&camera, .THIRD_PERSON)
 
   if spin do rl.UpdateCamera(&camera, .ORBITAL)
-
-  // direction.x = cosine(yaw angle of camera in radians) * speed
-  // direction.y = sine(yaw angle of camera in radians) * speed
 }
 
 draw :: proc() {
