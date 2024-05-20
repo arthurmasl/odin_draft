@@ -9,10 +9,13 @@ camera: rl.Camera2D
 center: rl.Vector2
 
 RANGE :: 1200
-COUNT :: 6000
+COUNT :: 3000
 RADIUS :: 2
 
-particles: [COUNT]rl.Vector2
+Particle :: struct {
+  pos:   rl.Vector2,
+  color: rl.Color,
+}
 
 main :: proc() {
   rl.SetConfigFlags(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_UNFOCUSED})
@@ -48,14 +51,14 @@ update :: proc() {
   }
 }
 
-placedParticles := 0
+particles: [dynamic]Particle
 retries := 0
 
 genereate_particles :: proc() {
-  placedParticles = 0
+  clear(&particles)
   retries = 0
 
-  for placedParticles != COUNT {
+  for len(particles) != COUNT {
     retries += 1
     if retries == COUNT * 2 do break
 
@@ -65,23 +68,33 @@ genereate_particles :: proc() {
     }
 
     canFit := true
-    for &other_particle in particles {
-      if rl.CheckCollisionCircles(pos, RADIUS, other_particle, RADIUS * 2) {
+    for &particle in particles {
+      if rl.CheckCollisionCircles(pos, RADIUS, particle.pos, RADIUS * 2) {
         canFit = false
         break
       }
     }
 
     if canFit {
-      particles[placedParticles] = pos
-      placedParticles += 1
+      append(
+        &particles,
+        Particle {
+          pos = pos,
+          color = {
+            u8(rl.GetRandomValue(0, 255)),
+            u8(rl.GetRandomValue(0, 255)),
+            u8(rl.GetRandomValue(0, 255)),
+            255,
+          },
+        },
+      )
     }
   }
 }
 
 draw_particles :: proc() {
   for &particle in particles {
-    rl.DrawCircleV(particle, RADIUS, rl.GRAY)
+    rl.DrawCircleV(particle.pos, RADIUS, particle.color)
   }
 }
 
@@ -93,7 +106,7 @@ draw :: proc() {
   rl.EndMode2D()
   rl.DrawFPS(10, 10)
   rl.DrawText(
-    rl.TextFormat("particles: %d, tries: %d", placedParticles, retries),
+    rl.TextFormat("particles: %d, tries: %d", len(particles), retries),
     10,
     30,
     20,
