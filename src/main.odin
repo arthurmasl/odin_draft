@@ -33,9 +33,7 @@ main :: proc() {
     offset = center,
   }
 
-  genereate_particles()
-
-  // rl.EnableEventWaiting()
+  rl.EnableEventWaiting()
 
   for !rl.WindowShouldClose() {
     update()
@@ -46,67 +44,13 @@ main :: proc() {
 }
 
 update :: proc() {
-  if rl.IsMouseButtonDown(.LEFT) {
-    genereate_particles()
-  }
-}
-
-particles: [dynamic]Particle
-retries := 0
-
-genereate_particles :: proc() {
-  clear(&particles)
-  retries = 0
-
-  for len(particles) != COUNT {
-    retries += 1
-    if retries == COUNT * 2 do break
-
-    randomPos := rl.Vector2 {
-      f32(rl.GetRandomValue(-RANGE / 2, RANGE / 2)),
-      f32(rl.GetRandomValue(-RANGE / 2, RANGE / 2)),
-    }
-
-    canFit := true
-    for &particle in particles {
-      if rl.CheckCollisionCircles(randomPos, RADIUS, particle.pos, RADIUS * 5) {
-        canFit = false
-        break
-      }
-    }
-
-    if canFit {
-      randomColor: rl.Color = {
-        u8(rl.GetRandomValue(0, 255)),
-        u8(rl.GetRandomValue(0, 255)),
-        u8(rl.GetRandomValue(0, 255)),
-        255,
-      }
-
-      append(&particles, Particle{pos = randomPos, color = randomColor})
-    }
-  }
-}
-
-draw_particles :: proc() {
-  for &particle in particles {
-    rl.DrawCircleV(particle.pos, RADIUS, particle.color)
-  }
 }
 
 draw :: proc() {
   rl.BeginDrawing()
   rl.ClearBackground(rl.BLACK)
   rl.BeginMode2D(camera)
-  draw_particles()
   rl.EndMode2D()
   rl.DrawFPS(10, 10)
-  rl.DrawText(
-    rl.TextFormat("particles: %d, tries: %d", len(particles), retries),
-    10,
-    30,
-    20,
-    rl.LIME,
-  )
   rl.EndDrawing()
 }
