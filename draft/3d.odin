@@ -101,51 +101,30 @@ update :: proc() {
   player.angle = -rl.Vector2LineAngle(center, rl.GetMousePosition())
 
   camera.target = player.pos
-  camera.position = {player.pos.x, player.pos.y + 20, player.pos.z + 50}
+  camera.position = {player.pos.x, player.pos.y + 40, player.pos.z + 50}
 
-  if rl.U do eCamera(&camera( .THIRD, .RSON)
+  if spin do rl.UpdateCamera(&camera, .ORBITAL)
 
-)
-
-  spin do rl.UpdateCamera(&camera, .ORBITAL)
+  // direction.x = cosine(yaw angle of camera in radians) * speed
+  // direction.y = sine(yaw angle of camera in radians) * speed
 }
 
 draw :: proc() {
-
-  l.BeginDrawing()
+  rl.BeginDrawing()
   rl.ClearBackground(rl.SKYBLUE)
-  rl.BeginM
-}
+  rl.BeginMode3D(camera)
 
-D(ca :: proc() {
-  wPlane({}, 500,()
-  ARKGREEN)
+  rl.DrawPlane({}, 500, rl.DARKGREEN)
 
-  rl.Dr(wCubeV(pla)
-  pos, size, rl.(AROON))
+  rl.DrawCubeV(player.pos, size, rl.MAROON)
+  if debug do rl.DrawCubeWiresV(player.pos, size, rl.BLACK)
 
-   debug do rl({}, Cub, iresV(player)
-
-   size, rl.BL(CK)
-
-  for, terr, n in terr)
-  if    rl do wCubeV(terrain.po(, terrain., ze, , .GRAY)
- )
-
-  for ug do rl in wCubeWi {
-    rrain.pos, t(rrain.size,, l.BLACK)
-  },   if de)
-    if .Draw do (100, 5)
-
-  rl.En(Mode3D()
-
- , l.DrawFPS(10, 10)
-  rl)
+  for &terrain in terrain {
+    rl.DrawCubeV(terrain.pos, terrain.size, rl.GRAY)
+    if debug do rl.DrawCubeWiresV(terrain.pos, terrain.size, rl.BLACK)
   }
 
-  if )
-}
-g do rl.DrawGrid(100, 5)
+  if debug do rl.DrawGrid(100, 5)
 
   rl.EndMode3D()
 
