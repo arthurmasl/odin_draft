@@ -9,7 +9,7 @@ camera: rl.Camera2D
 center: rl.Vector2
 
 RANGE :: 1200
-COUNT :: 3000
+COUNT :: 4000
 RADIUS :: 2
 
 Particle :: struct {
@@ -35,7 +35,7 @@ main :: proc() {
 
   genereate_particles()
 
-  rl.EnableEventWaiting()
+  // rl.EnableEventWaiting()
 
   for !rl.WindowShouldClose() {
     update()
@@ -46,7 +46,7 @@ main :: proc() {
 }
 
 update :: proc() {
-  if rl.IsMouseButtonPressed(.LEFT) {
+  if rl.IsMouseButtonDown(.LEFT) {
     genereate_particles()
   }
 }
@@ -62,32 +62,28 @@ genereate_particles :: proc() {
     retries += 1
     if retries == COUNT * 2 do break
 
-    pos := rl.Vector2 {
+    randomPos := rl.Vector2 {
       f32(rl.GetRandomValue(-RANGE / 2, RANGE / 2)),
       f32(rl.GetRandomValue(-RANGE / 2, RANGE / 2)),
     }
 
     canFit := true
     for &particle in particles {
-      if rl.CheckCollisionCircles(pos, RADIUS, particle.pos, RADIUS * 2) {
+      if rl.CheckCollisionCircles(randomPos, RADIUS, particle.pos, RADIUS * 5) {
         canFit = false
         break
       }
     }
 
     if canFit {
-      append(
-        &particles,
-        Particle {
-          pos = pos,
-          color = {
-            u8(rl.GetRandomValue(0, 255)),
-            u8(rl.GetRandomValue(0, 255)),
-            u8(rl.GetRandomValue(0, 255)),
-            255,
-          },
-        },
-      )
+      randomColor: rl.Color = {
+        u8(rl.GetRandomValue(0, 255)),
+        u8(rl.GetRandomValue(0, 255)),
+        u8(rl.GetRandomValue(0, 255)),
+        255,
+      }
+
+      append(&particles, Particle{pos = randomPos, color = randomColor})
     }
   }
 }
