@@ -8,10 +8,7 @@ ent: [COUNT * 2]rl.Vector2
 
 dd_init_entities :: proc() {
   for i in 0 ..< COUNT {
-    ent[i] =  {
-      f32(rl.GetRandomValue(-RANGE, RANGE)),
-      f32(rl.GetRandomValue(-RANGE, RANGE)),
-    }
+    ent[i] = {f32(rl.GetRandomValue(-RANGE, RANGE)), f32(rl.GetRandomValue(-RANGE, RANGE))}
   }
 }
 
@@ -37,14 +34,7 @@ dd_draw :: proc() {
   rl.EndTextureMode()
 
   rl.BeginDrawing()
-  rl.DrawTexturePro(
-    offscreen.target.texture,
-    offscreen.source,
-    offscreen.dest,
-    offscreen.origin,
-    0,
-    rl.WHITE,
-  )
+  rl.DrawTexturePro(offscreen.target.texture, offscreen.source, offscreen.dest, offscreen.origin, 0, rl.WHITE)
   rl.DrawFPS(10, 10)
   rl.EndDrawing()
 }

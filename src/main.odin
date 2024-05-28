@@ -32,7 +32,6 @@ main :: proc() {
 }
 
 update :: proc() {
-
 }
 
 draw :: proc() {
