@@ -1,45 +1,37 @@
 package main
 
-import rl "vendor:raylib"
-
-width: f32
-height: f32
-camera: rl.Camera2D
-center: rl.Vector2
+import "core:fmt"
+import "core:os"
+import "core:thread"
 
 main :: proc() {
-  rl.SetConfigFlags(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_UNFOCUSED})
-  rl.InitWindow(1280, 1412, "game prototype")
+  t1 := thread.create_and_start(proc() {
+    sum: i32
+    for i in 0 ..< 100000 {
+      sum += 1
+    }
 
-  rl.SetWindowPosition(rl.GetMonitorWidth(0), 0)
-  rl.SetTargetFPS(rl.GetMonitorRefreshRate(0) * 3)
+    fmt.println("t1", sum)
+  })
 
-  width = f32(rl.GetScreenWidth())
-  height = f32(rl.GetScreenHeight())
+  t2 := thread.create_and_start(proc() {
+    sum: i32
+    for i in 0 ..< 100000 {
+      sum += 1
+    }
 
-  center = {width / 2, height / 2}
-  camera = {
-    zoom   = 1,
-    offset = center,
+    fmt.println("t2", sum)
+  })
+
+  for {
+    t1_done := thread.is_done(t1)
+    t2_done := thread.is_done(t2)
+
+    if t1_done do thread.terminate(t1, 0)
+    if t2_done do thread.terminate(t2, 0)
+
+    if t1_done && t2_done do break
   }
 
-  for !rl.WindowShouldClose() {
-    update()
-    draw()
-  }
-
-  defer rl.CloseWindow()
-}
-
-update :: proc() {
-}
-
-draw :: proc() {
-  rl.BeginDrawing()
-  rl.ClearBackground(rl.BLACK)
-  rl.BeginMode2D(camera)
-
-  rl.EndMode2D()
-  rl.DrawFPS(10, 10)
-  rl.EndDrawing()
+  fmt.println("done")
 }
