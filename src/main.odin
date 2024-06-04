@@ -1,21 +1,32 @@
 package main
 
 import "core:fmt"
-import "core:os"
-import "core:thread"
+import "core:time"
 
-PATH :: "resources/test.json"
+Vector :: struct {
+  x, y: int,
+}
+
+sum_v :: proc(v: ^Vector) -> int {
+  return v.x + v.y
+}
+
+vectors: [10000000]Vector
 
 main :: proc() {
-  file, file_ok := os.read_entire_file(PATH)
+  t1 := time.now()
+  sum := 0
 
-  if (!file_ok) {
-    text := transmute([]byte)(string)("hello, world")
-    os.write_entire_file(PATH, text)
+  for &v, i in vectors {
+    v.x = i
+    sum += sum_v(&v)
   }
 
-  if (file_ok) {
-    text := string(file)
-    fmt.println(text)
-  }
+  fmt.println(sum)
+  fmt.println(time.since(t1))
+
+  s1 := [3]int{1, 2, 3}
+  s2 := [3]int{1, 2, 3}
+
+  fmt.println(s1 == s2)
 }
