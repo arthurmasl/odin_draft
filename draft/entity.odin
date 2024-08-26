@@ -56,10 +56,10 @@ update_creature :: proc(creature: ^Creature) {
 }
 
 main :: proc() {
-  player := create_entity(Player)
+  player = create_entity(Player)
   creature := create_entity(Creature)
 
-  entities := make([dynamic]^Entity)
+  player.entities := make([dynamic]^Entity)
   append(&entities, player)
   append(&entities, creature)
 
