@@ -25,6 +25,7 @@ PIECES := "PRNBQKP"
 board: [8][8]i32
 active_key: rune
 piece_number := i32(-1)
+command: [dynamic]rune
 
 main :: proc() {
   rl.SetConfigFlags(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_UNFOCUSED})
@@ -32,6 +33,7 @@ main :: proc() {
 
   rl.SetWindowPosition(rl.GetMonitorWidth(0), 0)
   rl.SetTargetFPS(rl.GetMonitorRefreshRate(0))
+  rl.SetExitKey(.KEY_NULL)
 
   init()
 
@@ -55,27 +57,43 @@ init :: proc() {
     {2, 3, 4, 5, 6, 4, 3, 2},
   }
 
-  fmt.println(board)
+  // fmt.println(board)
+}
+
+clear_board :: proc() {
+  for cols, row in board {
+    for cell, col in cols {
+      if cell == AVAILABLE {
+        board[row][col] = 0
+      }
+    }
+  }
+}
+
+reset :: proc() {
+  active_key = 0
+  piece_number = -1
+  clear(&command)
+  clear_board()
 }
 
 update :: proc() {
+  // escape
+  if rl.IsKeyPressed(.ESCAPE) {
+    reset()
+  }
+
   key := rl.GetCharPressed()
 
   if key != 0 {
     active_key = key
+    append(&command, key)
 
-    // clear
-    for cols, row in board {
-      for cell, col in cols {
-        if cell == AVAILABLE {
-          board[row][col] = 0
-        }
-      }
-    }
+    clear_board()
 
     if index := strings.index_rune(PIECES, active_key); index >= 0 {
       piece_number = i32(index + 1)
-      fmt.println(piece_number, active_key)
+      // fmt.println(piece_number, active_key)
 
       // set available
       for cols, row in board {
@@ -94,8 +112,6 @@ update :: proc() {
         }
       }
 
-      fmt.println(board)
-
     }
   }
 }
@@ -105,6 +121,7 @@ draw :: proc() {
   rl.ClearBackground(rl.BLACK)
 
   rl.DrawText(rl.TextFormat("%c", active_key), (rl.GetScreenWidth() / 2) - 10, 100, 20, WHITE)
+  rl.DrawText(rl.TextFormat("%c", command), (rl.GetScreenWidth() / 2) + 10, 100, 20, WHITE)
 
   for cols, row in board {
     for cell, col in cols {
@@ -116,7 +133,8 @@ draw :: proc() {
       number := NUMBERS[row]
       letter := LETTERS[col]
       is_active := piece_number == cell
-      is_available := rune(letter) == active_key || rune(number) == active_key || cell == AVAILABLE
+      // is_available := rune(letter) == active_key || rune(number) == active_key || cell == AVAILABLE
+      is_available := cell == AVAILABLE
 
       // color
       color_even := col % 2 == 0 ? LIGHT : DARK
