@@ -86,10 +86,23 @@ update :: proc() {
   key := rl.GetCharPressed()
 
   if key != 0 {
+    clear_board()
+
     active_key = key
     append(&command, key)
 
-    clear_board()
+    if len(command) == 3 {
+      fmt.println(command)
+
+      row := strings.index_rune(NUMBERS, command[2])
+      col := strings.index_rune(LETTERS, command[1])
+
+      board[row][col] = 1
+      board[row + 1][col] = 0
+      board[row + 2][col] = 0
+
+      reset()
+    }
 
     if index := strings.index_rune(PIECES, active_key); index >= 0 {
       piece_number = i32(index + 1)
