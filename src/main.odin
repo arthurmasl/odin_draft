@@ -4,9 +4,6 @@ import "core:fmt"
 import rl "vendor:raylib"
 import rlgl "vendor:raylib/rlgl"
 
-width: f32
-height: f32
-
 DARK :: rl.Color{118, 150, 86, 255}
 LIGHT :: rl.Color{238, 238, 210, 255}
 WHITE :: rl.Color{248, 248, 248, 255}
@@ -18,7 +15,9 @@ GAP :: 200
 
 LETTERS := "abcdefgh"
 NUMBERS := "87654321"
+PIECES := "PRNBQKP"
 
+board: [8][8]i32
 active_key: rune
 
 main :: proc() {
@@ -28,8 +27,7 @@ main :: proc() {
   rl.SetWindowPosition(rl.GetMonitorWidth(0), 0)
   rl.SetTargetFPS(rl.GetMonitorRefreshRate(0))
 
-  width = f32(rl.GetScreenWidth())
-  height = f32(rl.GetScreenHeight())
+  init()
 
   for !rl.WindowShouldClose() {
     update()
@@ -37,6 +35,21 @@ main :: proc() {
   }
 
   defer rl.CloseWindow()
+}
+
+init :: proc() {
+  board = [8][8]i32 {
+    {7, 7, 7, 7, 7, 7, 7, 7},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {2, 3, 4, 5, 6, 4, 3, 2},
+  }
+
+  fmt.println(board)
 }
 
 update :: proc() {
@@ -51,8 +64,8 @@ draw :: proc() {
   rl.BeginDrawing()
   rl.ClearBackground(rl.BLACK)
 
-  for row in 0 ..< 8 {
-    for col in 0 ..< 8 {
+  for cols, row in board {
+    for piece, col in cols {
       // cords
       x := GAP + i32(col) * SIZE
       y := GAP + i32(row) * SIZE
@@ -71,6 +84,11 @@ draw :: proc() {
 
       if is_active {
         rl.DrawRectangle(x, y, SIZE, SIZE, ACTIVE)
+      }
+
+      // pieces
+      if piece != 0 {
+        rl.DrawText(rl.TextFormat("%c", PIECES[piece - 1]), 35 + x, 35 + y, 50, piece == 7 ? BLACK : WHITE)
       }
 
       // numbers
