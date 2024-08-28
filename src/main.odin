@@ -9,10 +9,14 @@ DARK :: rl.Color{118, 150, 86, 255}
 LIGHT :: rl.Color{238, 238, 210, 255}
 WHITE :: rl.Color{248, 248, 248, 255}
 BLACK :: rl.Color{86, 83, 82, 255}
-ACTIVE :: rl.Color{187, 203, 68, 200}
+
+GREEN :: rl.Color{187, 203, 68, 200}
+GRAY :: rl.Color{0, 0, 0, 100}
 
 SIZE :: 100
 GAP :: 200
+
+AVAILABLE :: 9
 
 LETTERS := "abcdefgh"
 NUMBERS := "87654321"
@@ -20,6 +24,7 @@ PIECES := "PRNBQKP"
 
 board: [8][8]i32
 active_key: rune
+piece_number := i32(-1)
 
 main :: proc() {
   rl.SetConfigFlags(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_UNFOCUSED})
@@ -58,6 +63,40 @@ update :: proc() {
 
   if key != 0 {
     active_key = key
+
+    // clear
+    for cols, row in board {
+      for cell, col in cols {
+        if cell == AVAILABLE {
+          board[row][col] = 0
+        }
+      }
+    }
+
+    if index := strings.index_rune(PIECES, active_key); index >= 0 {
+      piece_number = i32(index + 1)
+      fmt.println(piece_number, active_key)
+
+      // set available
+      for cols, row in board {
+        for cell, col in cols {
+          if cell == piece_number {
+            maybe_cell1 := &board[row - 1][col]
+            maybe_cell2 := &board[row - 2][col]
+
+            if maybe_cell1^ == 0 {
+              maybe_cell1^ = AVAILABLE
+            }
+            if maybe_cell2^ == 0 {
+              maybe_cell2^ = AVAILABLE
+            }
+          }
+        }
+      }
+
+      fmt.println(board)
+
+    }
   }
 }
 
@@ -68,7 +107,7 @@ draw :: proc() {
   rl.DrawText(rl.TextFormat("%c", active_key), (rl.GetScreenWidth() / 2) - 10, 100, 20, WHITE)
 
   for cols, row in board {
-    for piece, col in cols {
+    for cell, col in cols {
       // cords
       x := GAP + i32(col) * SIZE
       y := GAP + i32(row) * SIZE
@@ -76,7 +115,8 @@ draw :: proc() {
       // values
       number := NUMBERS[row]
       letter := LETTERS[col]
-      is_active := rune(letter) == active_key || rune(number) == active_key
+      is_active := piece_number == cell
+      is_available := rune(letter) == active_key || rune(number) == active_key || cell == AVAILABLE
 
       // color
       color_even := col % 2 == 0 ? LIGHT : DARK
@@ -85,20 +125,19 @@ draw :: proc() {
 
       rl.DrawRectangle(x, y, SIZE, SIZE, color)
 
-      piece_number := i32(strings.index_rune(PIECES, active_key) + 1)
-      if piece_number != 0 {
-        if piece == piece_number {
-          is_active = true
-        }
+      // highlight active cells
+      if is_active {
+        rl.DrawRectangle(x, y, SIZE, SIZE, GREEN)
       }
 
-      if is_active {
-        rl.DrawRectangle(x, y, SIZE, SIZE, ACTIVE)
+      // highlight available cells
+      if is_available {
+        rl.DrawCircle(x + SIZE / 2, y + SIZE / 2, SIZE / 7, GRAY)
       }
 
       // pieces
-      if piece != 0 {
-        rl.DrawText(rl.TextFormat("%c", PIECES[piece - 1]), 35 + x, 35 + y, 50, piece == 7 ? BLACK : WHITE)
+      if cell > 0 && cell <= 7 {
+        rl.DrawText(rl.TextFormat("%c", PIECES[cell - 1]), 35 + x, 35 + y, 50, cell == 7 ? BLACK : WHITE)
       }
 
       // numbers
