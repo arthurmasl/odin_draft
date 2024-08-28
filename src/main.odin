@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:strings"
 import rl "vendor:raylib"
 import rlgl "vendor:raylib/rlgl"
 
@@ -64,6 +65,8 @@ draw :: proc() {
   rl.BeginDrawing()
   rl.ClearBackground(rl.BLACK)
 
+  rl.DrawText(rl.TextFormat("%c", active_key), (rl.GetScreenWidth() / 2) - 10, 100, 20, WHITE)
+
   for cols, row in board {
     for piece, col in cols {
       // cords
@@ -81,6 +84,13 @@ draw :: proc() {
       color := row % 2 == 0 ? color_even : color_odd
 
       rl.DrawRectangle(x, y, SIZE, SIZE, color)
+
+      piece_number := i32(strings.index_rune(PIECES, active_key) + 1)
+      if piece_number != 0 {
+        if piece == piece_number {
+          is_active = true
+        }
+      }
 
       if is_active {
         rl.DrawRectangle(x, y, SIZE, SIZE, ACTIVE)
