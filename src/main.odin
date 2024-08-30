@@ -77,6 +77,16 @@ reset :: proc() {
   clear_board()
 }
 
+set_cell_status :: proc(y, x: int, if_status, status: i32) {
+  if y < 0 || y >= len(board) do return
+  if x < 0 || x >= len(board[y]) do return
+
+  cell := &board[y][x]
+  if cell^ == if_status {
+    cell^ = status
+  }
+}
+
 update :: proc() {
   // escape
   if rl.IsKeyPressed(.ESCAPE) {
@@ -91,41 +101,40 @@ update :: proc() {
     active_key = key
     append(&command, key)
 
-    if len(command) == 3 {
-      fmt.println(command)
+    // set available
+    if index := strings.index_rune(PIECES, command[0]); index >= 0 {
+      piece_number = i32(index + 1)
 
+      for cols, row in board {
+        for cell, col in cols {
+          if cell == piece_number {
+
+            if len(command) > 1 {
+              if letter_index := strings.index_rune(LETTERS, command[1]); letter_index >= 0 && letter_index != col {
+                continue
+              }
+
+            }
+
+            set_cell_status(row - 1, col, 0, AVAILABLE)
+            set_cell_status(row - 2, col, 0, AVAILABLE)
+          }
+        }
+      }
+    }
+
+    // move piece
+    if len(command) == 3 {
       row := strings.index_rune(NUMBERS, command[2])
       col := strings.index_rune(LETTERS, command[1])
 
-      board[row][col] = 1
-      board[row + 1][col] = 0
-      board[row + 2][col] = 0
+      set_cell_status(row, col, AVAILABLE, 1)
+      set_cell_status(row + 1, col, 1, 0)
+      set_cell_status(row + 2, col, 1, 0)
 
       reset()
     }
 
-    if index := strings.index_rune(PIECES, active_key); index >= 0 {
-      piece_number = i32(index + 1)
-      // fmt.println(piece_number, active_key)
-
-      // set available
-      for cols, row in board {
-        for cell, col in cols {
-          if cell == piece_number {
-            maybe_cell1 := &board[row - 1][col]
-            maybe_cell2 := &board[row - 2][col]
-
-            if maybe_cell1^ == 0 {
-              maybe_cell1^ = AVAILABLE
-            }
-            if maybe_cell2^ == 0 {
-              maybe_cell2^ = AVAILABLE
-            }
-          }
-        }
-      }
-
-    }
   }
 }
 
