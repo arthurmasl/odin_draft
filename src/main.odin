@@ -50,22 +50,19 @@ init :: proc() {
 }
 
 update :: proc() {
-  // escape
-  if rl.IsKeyPressed(.ESCAPE) {
-    reset()
-  }
-
-  key := rl.GetCharPressed()
-
-  if len(command) == 2 && strings.index_rune(LETTERS, command[1]) == -1 {
-    reset()
-  }
-
-  if key != 0 {
+  if key := rl.GetCharPressed(); key != 0 {
     clear_board()
 
     active_key = key
     append(&command, key)
+
+    // reset wrong command
+    if len(command) == 1 && strings.index_rune(PIECES, command[0]) == -1 ||
+       len(command) == 2 && strings.index_rune(LETTERS, command[1]) == -1 ||
+       len(command) == 3 && strings.index_rune(NUMBERS, command[2]) == -1 {
+      reset()
+      return
+    }
 
     // set available
     if index := strings.index_rune(PIECES, command[0]); index >= 0 {
@@ -73,16 +70,13 @@ update :: proc() {
 
       for cols, row in board {
         for cell, col in cols {
-          if cell == piece_number {
-
-            if len(command) > 1 {
-              if letter_index := strings.index_rune(LETTERS, command[1]); letter_index >= 0 && letter_index != col {
-                continue
-              }
-
-              set_cell_status(row - 1, col, 0, AVAILABLE)
-              set_cell_status(row - 2, col, 0, AVAILABLE)
+          if cell == piece_number && len(command) > 1 {
+            if letter_index := strings.index_rune(LETTERS, command[1]); letter_index >= 0 && letter_index != col {
+              continue
             }
+
+            set_cell_status(row - 1, col, 0, AVAILABLE)
+            set_cell_status(row - 2, col, 0, AVAILABLE)
           }
         }
       }
@@ -100,6 +94,10 @@ update :: proc() {
       reset()
     }
 
+  }
+
+  if rl.IsKeyPressed(.ESCAPE) {
+    reset()
   }
 }
 
