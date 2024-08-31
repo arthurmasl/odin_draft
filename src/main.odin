@@ -57,6 +57,10 @@ update :: proc() {
 
   key := rl.GetCharPressed()
 
+  if len(command) == 2 && strings.index_rune(LETTERS, command[1]) == -1 {
+    reset()
+  }
+
   if key != 0 {
     clear_board()
 
@@ -76,10 +80,9 @@ update :: proc() {
                 continue
               }
 
+              set_cell_status(row - 1, col, 0, AVAILABLE)
+              set_cell_status(row - 2, col, 0, AVAILABLE)
             }
-
-            set_cell_status(row - 1, col, 0, AVAILABLE)
-            set_cell_status(row - 2, col, 0, AVAILABLE)
           }
         }
       }
@@ -129,7 +132,12 @@ draw :: proc() {
 
       // highlight active cells
       if is_active {
-        rl.DrawRectangle(x, y, SIZE, SIZE, GREEN)
+        if len(command) == 1 do rl.DrawRectangle(x, y, SIZE, SIZE, GREEN)
+        if len(command) == 2 {
+          if letter_index := strings.index_rune(LETTERS, command[1]); letter_index == col {
+            rl.DrawRectangle(x, y, SIZE, SIZE, GREEN)
+          }
+        }
       }
 
       // highlight available cells
