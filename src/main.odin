@@ -17,6 +17,7 @@ SIZE :: 100
 GAP :: 200
 
 AVAILABLE :: 9
+ATTACKABLE :: 10
 
 LETTERS := "abcdefgh"
 NUMBERS := "87654321"
@@ -75,8 +76,13 @@ update :: proc() {
               continue
             }
 
+            // move dir
             set_cell_status(row - 1, col, 0, AVAILABLE)
-            set_cell_status(row - 2, col, 0, AVAILABLE)
+            if board[row - 1][col] == AVAILABLE do set_cell_status(row - 2, col, 0, AVAILABLE)
+
+            // atack dir
+            set_cell_status(row - 1, col - 1, 7, ATTACKABLE)
+            set_cell_status(row - 1, col + 1, 7, ATTACKABLE)
           }
         }
       }
@@ -88,6 +94,7 @@ update :: proc() {
       col := strings.index_rune(LETTERS, command[1])
 
       set_cell_status(row, col, AVAILABLE, 1)
+      // set_cell_status(row, col, ATTACKABLE, 1)
       set_cell_status(row + 1, col, 1, 0)
       set_cell_status(row + 2, col, 1, 0)
 
@@ -119,7 +126,7 @@ draw :: proc() {
       letter := LETTERS[col]
       is_active := piece_number == cell
       // is_available := rune(letter) == active_key || rune(number) == active_key || cell == AVAILABLE
-      is_available := cell == AVAILABLE
+      is_available := cell == AVAILABLE || cell == ATTACKABLE
 
       // color
       color_even := col % 2 == 0 ? LIGHT : DARK
@@ -146,6 +153,9 @@ draw :: proc() {
       // pieces
       if cell > 0 && cell <= 7 {
         rl.DrawText(rl.TextFormat("%c", PIECES[cell - 1]), 35 + x, 35 + y, 50, cell == 7 ? BLACK : WHITE)
+      }
+      if cell == ATTACKABLE {
+        rl.DrawText(rl.TextFormat("%c", PIECES[6]), 35 + x, 35 + y, 50, BLACK)
       }
 
       // numbers
