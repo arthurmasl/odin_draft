@@ -4,5 +4,6 @@
   "tabs": false,
   "spaces": 2,
   "tabs_width": 2,
-  "newline_limit": 1
+  "newline_limit": 1,
+  "exp_multiline_composite_literals": true
 }
