@@ -8,7 +8,6 @@ main :: proc() {
     track: mem.Tracking_Allocator
     mem.tracking_allocator_init(&track, context.allocator)
     context.allocator = mem.tracking_allocator(&track)
-    context.user_index = 222
 
     defer {
       if len(track.allocation_map) > 0 {
