@@ -3,9 +3,9 @@ package main
 import "core:fmt"
 
 ShapeType :: enum u8 {
-  Rectangle = 4,
-  Triangle  = 3,
-  Circle    = 0,
+  Rectangle,
+  Triangle,
+  Circle,
 }
 
 Shape :: struct {
@@ -26,8 +26,8 @@ main :: proc() {
 
   shapes := [?]Shape{rect, circle}
 
-  getAreaSwitch(&rect)
-  getAreaSwitch(&circle)
+  getAreaSwitch(rect.variant)
+  getAreaSwitch(circle.variant)
 
   total := totalArea(shapes[:])
   fmt.println(total)
@@ -35,11 +35,12 @@ main :: proc() {
   fmt.println(circle.variant, u8(circle.variant))
 }
 
-getAreaSwitch :: proc(shape: ^Shape) -> u8 {
-  return u8(shape.variant) * 2
+shape_edges := [?]u8{4, 3, 0}
+getAreaSwitch :: proc(variant: ShapeType) -> u8 {
+  return shape_edges[u8(variant)] * 2
 }
 
 totalArea :: proc(shapes: []Shape) -> (total: u8) {
-  for &shape in shapes do total += getAreaSwitch(&shape)
+  for shape in shapes do total += getAreaSwitch(shape.variant)
   return total
 }
