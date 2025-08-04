@@ -28,7 +28,7 @@ GlobalState :: struct {
   pass:     Pass,
 }
 
-global := #soa[len(EntityType)]GlobalState{}
+global: #soa[len(EntityType)]GlobalState
 
 main :: proc() {
   // fmt.printfln("%#w", global)
@@ -36,4 +36,5 @@ main :: proc() {
   fmt.printfln("%#w", global.pipleine[EntityType.Grass])
   fmt.printfln("%w", global[EntityType.Grass].binding)
 
+  fmt.println(&global.pipleine[0] == &global[0].pipleine)
 }
