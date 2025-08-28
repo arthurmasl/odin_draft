@@ -5,8 +5,8 @@ import "core:fmt"
 
 Window_Iterator :: struct($T: typeid) {
   slice: []T,
-  size:  uint,
-  index: uint,
+  size:  int,
+  index: int,
 }
 
 window_iterator :: proc($T: typeid, it: ^Window_Iterator(T)) -> (window: []T, ok: bool) {
