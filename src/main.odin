@@ -1,37 +1,31 @@
-#+feature dynamic-literals
 package main
 
 import "core:fmt"
-import vmem "core:mem/virtual"
 
-Pseudo_Object :: struct {
-  id: uint,
+Window_Iterator :: struct($T: typeid) {
+  slice: []T,
+  size:  int,
+  index: int,
 }
 
-Mesh :: struct {
-  name:      string,
-  bindings:  []Pseudo_Object,
-  pipelines: []Pseudo_Object,
-  arena:     vmem.Arena,
+window_iterator :: proc($T: typeid, it: ^Window_Iterator(T)) -> (window: []T, ok: bool) {
+  if it.index + it.size > len(it.slice) do return nil, false
+
+  window = it.slice[it.index:it.index + it.size]
+  it.index += 1
+
+  return window, true
 }
 
 main :: proc() {
-  // generate arena
-  mesh_arena: vmem.Arena
-  arena_allocator := vmem.arena_allocator(&mesh_arena)
+  data := []int{1, 2, 3, 4, 5, 6, 7}
 
-  // generate mesh
-  bindings := make([]Pseudo_Object, 1024, arena_allocator)
-  pipelines := make([]Pseudo_Object, 1024, arena_allocator)
-  mesh := Mesh {
-    name      = "Player",
-    bindings  = bindings,
-    pipelines = pipelines,
-    arena     = mesh_arena,
+  it := Window_Iterator(int) {
+    slice = data,
+    size  = 2,
   }
 
-  fmt.println(mesh.bindings[0])
-
-  // free arena
-  vmem.arena_destroy(&mesh.arena)
+  for val in window_iterator(int, &it) {
+    fmt.println(val)
+  }
 }
