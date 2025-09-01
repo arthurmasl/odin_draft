@@ -20,4 +20,14 @@ main :: proc() {
   fmt.println(set1 & set2)
   fmt.println(set1 | set2)
   fmt.println(set1 ~ set2)
+
+  set := bit_set[Item]{.One, .Two}
+  sub := bit_set[Item]{.One}
+  fmt.println(set > sub)
+  fmt.println(set <= sub)
+  fmt.println(set == sub)
+  fmt.println(set != sub)
+
+  fmt.println(.One in set1)
+  fmt.println(.Three not_in set1)
 }
