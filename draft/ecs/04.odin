@@ -2,7 +2,9 @@ package main
 
 import "core:fmt"
 
-Entity :: distinct uint
+CAPACITY :: 2
+
+Entity_Id :: distinct uint
 
 Movement_Coponent :: struct {
   pos: f32,
@@ -40,23 +42,23 @@ Game :: struct {
 
 g: Game
 
-entity_create :: proc() -> Entity {
-  @(static) id := Entity(0)
+entity_create :: proc() -> Entity_Id {
+  @(static) id := Entity_Id(0)
   local_id := id
   id += 1
   return local_id
 }
 
-game_init :: proc(capacity: int) {
+game_init :: proc() {
   g = {
-    movement   = make(#soa[]Movement_Coponent, capacity),
-    stats      = make(#soa[]Stats_Component, capacity),
-    flags      = make(#soa[]Flags_Component, capacity),
-    renderable = make(#soa[]Renderable_Component, capacity),
+    movement   = make(#soa[]Movement_Coponent, CAPACITY),
+    stats      = make(#soa[]Stats_Component, CAPACITY),
+    flags      = make(#soa[]Flags_Component, CAPACITY),
+    renderable = make(#soa[]Renderable_Component, CAPACITY),
   }
 }
 
-component_set :: proc(id: Entity, array: ^#soa[]$E, component: E) {
+component_set :: proc(id: Entity_Id, array: ^#soa[]$E, component: E) {
   array[id] = component
 }
 
@@ -74,7 +76,7 @@ renderable_system :: proc() {
 }
 
 main :: proc() {
-  game_init(capacity = 2)
+  game_init()
 
   player := entity_create()
   component_set(player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
