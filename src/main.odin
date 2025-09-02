@@ -2,93 +2,84 @@ package main
 
 import "core:fmt"
 
-CAPACITY :: 2
+Entity_Id :: int
 
-Entity_Id :: distinct uint
-
-Movement_Coponent :: struct {
-  pos: f32,
-  vel: f32,
+Sparse_Set :: struct {
+  sparse: []Entity_Id,
+  dense:  []Entity_Id,
+  count:  int,
 }
 
-Stats_Component :: struct {
-  hp:     f32,
-  max_hp: f32,
+sparse_set_init :: proc(capacity: int) -> Sparse_Set {
+  return {sparse = make([]Entity_Id, capacity), dense = make([]Entity_Id, capacity)}
 }
 
-Flags_Component :: struct {
-  state: enum u8 {
-    Alive,
-    Dead,
-  },
+sparse_set_contains :: proc(set: ^Sparse_Set, id: Entity_Id) -> bool {
+  if id >= len(set.sparse) do return false
+  idx := set.sparse[id]
+  return idx < set.count && set.dense[idx] == id
 }
 
-Renderable_Object :: struct {
-  id:   uint,
-  data: rawptr,
+sparse_set_insert :: proc(set: ^Sparse_Set, id: Entity_Id) {
+  if sparse_set_contains(set, id) do return
+  set.dense[set.count] = id
+  set.sparse[id] = set.count
+  set.count += 1
 }
 
-Renderable_Component :: struct {
-  pipeline: Renderable_Object,
-  binding:  Renderable_Object,
+Position :: struct {
+  x, y: f32,
+}
+Velocity :: struct {
+  vx, vy: f32,
 }
 
-Game :: struct {
-  movement:   #soa[]Movement_Coponent,
-  stats:      #soa[]Stats_Component,
-  flags:      #soa[]Flags_Component,
-  renderable: #soa[]Renderable_Component,
+Component_Pool :: struct(T: typeid) {
+  set:  Sparse_Set,
+  data: []T,
 }
 
-g: Game
-
-entity_create :: proc() -> Entity_Id {
-  @(static) id := Entity_Id(0)
-  local_id := id
-  id += 1
-  return local_id
+pool_init :: proc($T: typeid, capacity: int) -> Component_Pool(T) {
+  return {set = sparse_set_init(capacity), data = make([]T, capacity)}
 }
 
-game_init :: proc() {
-  g = {
-    movement   = make(#soa[]Movement_Coponent, CAPACITY),
-    stats      = make(#soa[]Stats_Component, CAPACITY),
-    flags      = make(#soa[]Flags_Component, CAPACITY),
-    renderable = make(#soa[]Renderable_Component, CAPACITY),
-  }
+pool_add :: proc(pool: ^Component_Pool($T), id: Entity_Id, value: T) {
+  sparse_set_insert(&pool.set, id)
+  pool.data[id] = value
 }
 
-component_set :: proc(id: Entity_Id, array: ^#soa[]$E, component: E) {
-  array[id] = component
+pool_has :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> bool {
+  return sparse_set_contains(&pool.set, id)
 }
 
-movement_system :: proc() {
-  for &e in g.movement {
-    e.pos += e.vel
-  }
+pool_get :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> ^T {
+  return &pool.data[id]
 }
 
-renderable_system :: proc() {
-  for &e in g.renderable {
-    fmt.println("use bindings with id", e.binding.id)
-    fmt.println("use pipeline with id", e.pipeline.id)
+iterate_pool :: proc(pool: ^Component_Pool($T)) {
+  for id in pool.set.dense {
+    if pool_has(pool, id) {
+      pos := pool_get(pool, id)
+      fmt.println(pos)
+    }
   }
 }
 
 main :: proc() {
-  game_init()
+  capacity := 3
+  positions := pool_init(Position, capacity)
+  velocities := pool_init(Velocity, capacity)
 
-  player := entity_create()
-  component_set(player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
-  component_set(player, &g.movement, Movement_Coponent{pos = 5, vel = 1})
-  component_set(player, &g.flags, Flags_Component{.Alive})
-  component_set(player, &g.renderable, Renderable_Component{pipeline = {id = 111}, binding = {id = 111}})
+  e1 := 1
+  e2 := 2
 
-  enemy := entity_create()
-  component_set(enemy, &g.stats, Stats_Component{hp = 0, max_hp = 100})
-  component_set(enemy, &g.flags, Flags_Component{.Dead})
-  component_set(enemy, &g.renderable, Renderable_Component{pipeline = {id = 222}, binding = {id = 222}})
+  pool_add(&positions, e1, Position{10, 10})
+  pool_add(&velocities, e1, Velocity{1, 1})
 
-  movement_system()
-  renderable_system()
+  pool_add(&positions, e2, Position{5, 5})
+
+  fmt.println()
+
+  iterate_pool(&positions)
+  iterate_pool(&velocities)
 }
