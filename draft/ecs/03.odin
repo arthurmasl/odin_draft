@@ -34,7 +34,6 @@ entity_create :: proc() -> Entity {
   local_id := id
   id += 1
   return local_id
-
 }
 
 game_init :: proc(capacity: int) {
@@ -51,7 +50,6 @@ component_set :: proc(id: Entity, array: ^#soa[]$E, component: E) {
 
 position_system :: proc() {
   for &e in g.movement {
-    e.vel = 10
     e.pos += e.vel
   }
 }
@@ -68,7 +66,7 @@ main :: proc() {
   component_set(enemy, &g.stats, Stats_Component{hp = 0, max_hp = 100})
   component_set(enemy, &g.flags, Flags_Component{.Dead})
 
-  // position_system()
+  position_system()
 
   fmt.println(g.stats[player])
   fmt.println(g.movement[player])
