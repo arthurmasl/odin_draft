@@ -49,12 +49,12 @@ entity_create :: proc() -> Entity_Id {
   return local_id
 }
 
-game_init :: proc(capacity: int) {
+game_init :: proc() {
   g = {
-    movement   = make(#soa[]Movement_Coponent, capacity),
-    stats      = make(#soa[]Stats_Component, capacity),
-    flags      = make(#soa[]Flags_Component, capacity),
-    renderable = make(#soa[]Renderable_Component, capacity),
+    movement   = make(#soa[]Movement_Coponent, CAPACITY),
+    stats      = make(#soa[]Stats_Component, CAPACITY),
+    flags      = make(#soa[]Flags_Component, CAPACITY),
+    renderable = make(#soa[]Renderable_Component, CAPACITY),
   }
 }
 
@@ -76,7 +76,7 @@ renderable_system :: proc() {
 }
 
 main :: proc() {
-  game_init(capacity = 2)
+  game_init()
 
   player := entity_create()
   component_set(player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
