@@ -58,14 +58,6 @@ position_system :: proc() {
 main :: proc() {
   game_init(capacity = 2)
 
-  g.stats[Entity_Id.Player] = {
-    hp     = 100,
-    max_hp = 150,
-  }
-  g.movement[Entity_Id.Player] = {
-    pos = 5,
-    vel = 1,
-  }
   component_set(.Player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
   component_set(.Player, &g.movement, Movement_Coponent{pos = 5, vel = 1})
   component_set(.Player, &g.flags, Flags_Component{.Alive})
