@@ -2,9 +2,7 @@ package main
 
 import "core:fmt"
 
-CAPACITY :: 2
-
-Entity_Id :: distinct uint
+Entity :: distinct uint
 
 Movement_Coponent :: struct {
   pos: f32,
@@ -42,8 +40,8 @@ Game :: struct {
 
 g: Game
 
-entity_create :: proc() -> Entity_Id {
-  @(static) id := Entity_Id(0)
+entity_create :: proc() -> Entity {
+  @(static) id := Entity(0)
   local_id := id
   id += 1
   return local_id
@@ -58,7 +56,7 @@ game_init :: proc(capacity: int) {
   }
 }
 
-component_set :: proc(id: Entity_Id, array: ^#soa[]$E, component: E) {
+component_set :: proc(id: Entity, array: ^#soa[]$E, component: E) {
   array[id] = component
 }
 
