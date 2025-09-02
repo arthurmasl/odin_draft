@@ -44,10 +44,8 @@ game_init :: proc(capacity: int) {
   }
 }
 
-entity_create :: proc(id: Entity_Id) {
-  g.movement[id].pos = 50
-  g.stats[id].hp = 100
-  g.stats[id].max_hp = 150
+component_set :: proc(id: Entity_Id, array: ^#soa[]$E, component: E) {
+  array[id] = component
 }
 
 position_system :: proc() {
@@ -60,10 +58,29 @@ position_system :: proc() {
 main :: proc() {
   game_init(capacity = 2)
 
-  entity_create(id = .Player)
-  entity_create(id = .Enemy)
+  g.stats[Entity_Id.Player] = {
+    hp     = 100,
+    max_hp = 150,
+  }
+  g.movement[Entity_Id.Player] = {
+    pos = 5,
+    vel = 1,
+  }
+  component_set(.Player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
+  component_set(.Player, &g.movement, Movement_Coponent{pos = 5, vel = 1})
+  component_set(.Player, &g.flags, Flags_Component{.Alive})
 
-  position_system()
+  component_set(.Enemy, &g.stats, Stats_Component{hp = 0, max_hp = 100})
+  component_set(.Enemy, &g.flags, Flags_Component{.Dead})
 
-  fmt.println(g.flags)
+  // position_system()
+
+  fmt.println(g.stats[Entity_Id.Player])
+  fmt.println(g.movement[Entity_Id.Player])
+  fmt.println(g.flags[Entity_Id.Player])
+
+  fmt.println()
+  fmt.println(g.stats[Entity_Id.Enemy])
+  fmt.println(g.movement[Entity_Id.Enemy])
+  fmt.println(g.flags[Entity_Id.Enemy])
 }
