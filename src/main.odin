@@ -57,11 +57,9 @@ pool_get :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> ^T {
 }
 
 iterate_pool :: proc(pool: ^Component_Pool($T)) {
-  for id in pool.set.dense {
-    if pool_has(pool, id) {
-      pos := pool_get(pool, id)
-      fmt.println(pos)
-    }
+  for id in pool.set.dense[:pool.set.count] {
+    pos := pool.data[id]
+    fmt.println(pos)
   }
 }
 
@@ -78,8 +76,7 @@ main :: proc() {
 
   pool_add(&positions, e2, Position{5, 5})
 
-  fmt.println()
-
   iterate_pool(&positions)
+  fmt.println()
   iterate_pool(&velocities)
 }
