@@ -4,11 +4,6 @@ import "core:fmt"
 
 Entity :: distinct uint
 
-Entity_Id :: enum u8 {
-  Player,
-  Enemy,
-}
-
 Movement_Coponent :: struct {
   pos: f32,
   vel: f32,
@@ -19,13 +14,11 @@ Stats_Component :: struct {
   max_hp: f32,
 }
 
-Flags_State :: enum u8 {
-  Alive,
-  Dead,
-}
-
 Flags_Component :: struct {
-  state: Flags_State,
+  state: enum u8 {
+    Alive,
+    Dead,
+  },
 }
 
 Game :: struct {
@@ -36,6 +29,14 @@ Game :: struct {
 
 g: Game
 
+entity_create :: proc() -> Entity {
+  @(static) id := Entity(0)
+  local_id := id
+  id += 1
+  return local_id
+
+}
+
 game_init :: proc(capacity: int) {
   g = {
     movement = make(#soa[]Movement_Coponent, capacity),
@@ -44,7 +45,7 @@ game_init :: proc(capacity: int) {
   }
 }
 
-component_set :: proc(id: Entity_Id, array: ^#soa[]$E, component: E) {
+component_set :: proc(id: Entity, array: ^#soa[]$E, component: E) {
   array[id] = component
 }
 
@@ -58,21 +59,23 @@ position_system :: proc() {
 main :: proc() {
   game_init(capacity = 2)
 
-  component_set(.Player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
-  component_set(.Player, &g.movement, Movement_Coponent{pos = 5, vel = 1})
-  component_set(.Player, &g.flags, Flags_Component{.Alive})
+  player := entity_create()
+  component_set(player, &g.stats, Stats_Component{hp = 100, max_hp = 150})
+  component_set(player, &g.movement, Movement_Coponent{pos = 5, vel = 1})
+  component_set(player, &g.flags, Flags_Component{.Alive})
 
-  component_set(.Enemy, &g.stats, Stats_Component{hp = 0, max_hp = 100})
-  component_set(.Enemy, &g.flags, Flags_Component{.Dead})
+  enemy := entity_create()
+  component_set(enemy, &g.stats, Stats_Component{hp = 0, max_hp = 100})
+  component_set(enemy, &g.flags, Flags_Component{.Dead})
 
   // position_system()
 
-  fmt.println(g.stats[Entity_Id.Player])
-  fmt.println(g.movement[Entity_Id.Player])
-  fmt.println(g.flags[Entity_Id.Player])
+  fmt.println(g.stats[player])
+  fmt.println(g.movement[player])
+  fmt.println(g.flags[player])
 
   fmt.println()
-  fmt.println(g.stats[Entity_Id.Enemy])
-  fmt.println(g.movement[Entity_Id.Enemy])
-  fmt.println(g.flags[Entity_Id.Enemy])
+  fmt.println(g.stats[enemy])
+  fmt.println(g.movement[enemy])
+  fmt.println(g.flags[enemy])
 }
