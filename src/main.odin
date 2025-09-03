@@ -2,7 +2,7 @@ package main
 
 import "core:fmt"
 
-Entity_Id :: int
+Entity_Id :: distinct int
 
 Position :: struct {
   x, y: f32,
@@ -27,15 +27,15 @@ pool_init :: proc($T: typeid, capacity: int) -> Component_Pool(T) {
 }
 
 pool_contains :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> bool {
-  if id >= len(pool.sparse) do return false
-  idx := pool.sparse[id]
+  if int(id) >= len(pool.sparse) do return false
+  idx := int(pool.sparse[id])
   return idx < pool.count && pool.dense[idx] == id
 }
 
 pool_add :: proc(pool: ^Component_Pool($T), id: Entity_Id, value: T) {
   if pool_contains(pool, id) do return
   pool.dense[pool.count] = id
-  pool.sparse[id] = pool.count
+  pool.sparse[id] = Entity_Id(pool.count)
   pool.count += 1
   pool.data[id] = value
 }
@@ -66,8 +66,8 @@ main :: proc() {
   positions := pool_init(Position, capacity)
   velocities := pool_init(Velocity, capacity)
 
-  e1 := 1
-  e2 := 2
+  e1 := Entity_Id(1)
+  e2 := Entity_Id(2)
 
   pool_add(&positions, e1, Position{10, 10})
   pool_add(&velocities, e1, Velocity{1, 1})
