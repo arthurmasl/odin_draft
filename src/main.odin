@@ -46,15 +46,17 @@ pool_has :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> bool {
   return idx < pool.count && pool.dense[idx] == id
 }
 
+pool_get_ids :: proc(pool: ^Component_Pool($T)) -> []Entity_Id {
+  return pool.dense[:pool.count]
+}
+
 pool_get :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> ^T {
   return &pool.data[id]
 }
 
 iterate_pool :: proc(pool: ^Component_Pool($T)) {
-  fmt.printfln("%#v", pool)
-
-  for id in pool.dense[:pool.count] {
-    pos := pool.data[id]
+  for id in pool_get_ids(pool) {
+    pos := pool_get(pool, id)
     fmt.println(pos)
   }
 }
@@ -75,4 +77,6 @@ main :: proc() {
   iterate_pool(&positions)
   fmt.println()
   iterate_pool(&velocities)
+
+  // fmt.printfln("%#v", positions)
 }
