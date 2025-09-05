@@ -1,91 +1,127 @@
 package main
 
 import "core:fmt"
+import "core:time"
 
-Handle :: struct {
-  idx: u32,
-  gen: u32,
-}
-
-Handle_Map :: struct($T: typeid, $HT: typeid, $N: int) {
-  items:        [N]T,
-  num_items:    u32,
-  next_unused:  u32,
-  unused_items: [N]u32,
-  num_unused:   u32,
-}
-
-add :: proc(m: ^Handle_Map($T, $HT, $N), v: T) -> (HT, bool) #optional_ok {
-  v := v
-
-  if m.next_unused != 0 {
-    idx := m.next_unused
-    item := &m.items[idx]
-    m.next_unused = m.unused_items[idx]
-    m.unused_items[idx] = 0
-    gen := item.handle.gen
-    item^ = v
-    item.handle.idx = u32(idx)
-    item.handle.gen = gen + 1
-    m.num_unused -= 1
-  }
-
-  if m.num_items == 0 {
-    m.items[0] = {}
-    m.num_items += 1
-  }
-
-  if m.num_items == len(m.items) {
-    return {}, false
-  }
-
-  item := &m.items[m.num_items]
-  item^ = v
-  item.handle.idx = u32(m.num_items)
-  item.handle.gen = 1
-  m.num_items += 1
-
-  return item.handle, true
-}
-
-get :: proc(m: ^Handle_Map($T, $HT, $N), h: HT) -> ^T {
-  if h.idx <= 0 || h.idx >= m.num_items {
-    return nil
-  }
-
-  if item := &m.items[h.idx]; item.handle == h {
-    return item
-  }
-
-  return nil
-}
+Entity_Id :: distinct int
 
 Position :: struct {
-  handle: Handle,
-  pos:    [2]f32,
+  x, y: f32,
+}
+Velocity :: struct {
+  vx, vy: f32,
 }
 
-Velocity :: struct {
-  handle: Handle,
-  vel:    [2]f32,
+Component_Pool :: struct(T: typeid) {
+  sparse: []Entity_Id,
+  dense:  []Entity_Id,
+  count:  int,
+  data:   []T,
+}
+
+pool_init :: proc($T: typeid, capacity: int) -> Component_Pool(T) {
+  return Component_Pool(T) {
+    sparse = make([]Entity_Id, capacity),
+    dense = make([]Entity_Id, capacity),
+    data = make([]T, capacity),
+  }
+}
+
+pool_contains :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> bool {
+  if int(id) >= len(pool.sparse) do return false
+  idx := int(pool.sparse[id])
+  return idx < pool.count && pool.dense[idx] == id
+}
+
+pool_add :: proc(pool: ^Component_Pool($T), id: Entity_Id, value: T) {
+  if pool_contains(pool, id) do return
+  pool.dense[pool.count] = id
+  pool.sparse[id] = Entity_Id(pool.count)
+  pool.count += 1
+  pool.data[id] = value
+}
+
+pool_has :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> bool {
+  if id >= len(pool.sparse) do return false
+  idx := pool.sparse[id]
+  return idx < pool.count && pool.dense[idx] == id
+}
+
+pool_get_ids :: proc(pool: ^Component_Pool($T)) -> []Entity_Id {
+  return pool.dense[:pool.count]
+}
+
+pool_get :: proc(pool: ^Component_Pool($T), id: Entity_Id) -> ^T {
+  return &pool.data[id]
+}
+
+iterate_pool :: proc(pool: ^Component_Pool($T)) {
+  for id in pool_get_ids(pool) {
+    pos := pool_get(pool, id)
+    fmt.println(pos)
+  }
 }
 
 main :: proc() {
-  positions: Handle_Map(Position, Handle, 2)
-  velocities: Handle_Map(Velocity, Handle, 1)
+  // capacity := 3
+  // positions := pool_init(Position, capacity)
+  // velocities := pool_init(Velocity, capacity)
+  //
+  // e1 := Entity_Id(1)
+  // e2 := Entity_Id(2)
+  //
+  // pool_add(&positions, e1, Position{10, 10})
+  // pool_add(&velocities, e1, Velocity{1, 1})
+  //
+  // pool_add(&positions, e2, Position{5, 5})
+  //
+  // iterate_pool(&positions)
+  // fmt.println()
+  // iterate_pool(&velocities)
+  //
+  // fmt.printfln("%#v", positions)
 
-  h1 := add(&positions, Position{pos = {10, 5}})
-  h2 := add(&positions, Position{pos = {50, 55}})
+  test_dense()
+  test_sparse()
+}
 
-  add(&velocities, Velocity{vel = {1, 1}})
-
-  if e := get(&positions, h1); e != nil {
-    fmt.println(e)
+SIZE :: 10000000
+test_dense :: proc() {
+  capacity := SIZE
+  positions := pool_init(Position, capacity)
+  for i in 0 ..< capacity {
+    if i % 2 == 0 {
+      id := Entity_Id(i)
+      pool_add(&positions, id, Position{111, 111})
+    }
   }
 
-  if e := get(&positions, h2); e != nil {
-    fmt.println(e)
+  t1 := time.now()
+  total := f32(0)
+  for id in pool_get_ids(&positions) {
+    pos := pool_get(&positions, id)
+    total += pos.x
+    // fmt.println(pos, id)
+  }
+  fmt.println(time.since(t1), total)
+}
+
+test_sparse :: proc() {
+  capacity := SIZE
+  positions := pool_init(Position, capacity)
+  for i in 0 ..< capacity {
+    if i % 2 == 0 {
+      id := Entity_Id(i)
+      pool_add(&positions, id, Position{111, 111})
+    }
   }
 
-  fmt.printfln("%#w", velocities)
+  t1 := time.now()
+  total := f32(0)
+  for pos in positions.data {
+    // pos := pool_get(&positions, id)
+    total += pos.x
+    // fmt.println(pos, id)
+  }
+  fmt.println(time.since(t1), total)
 }
