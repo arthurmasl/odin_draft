@@ -18,14 +18,29 @@ window_iterator :: proc($T: typeid, it: ^Window_Iterator(T)) -> (window: []T, ok
 }
 
 main :: proc() {
-  data := []int{1, 2, 3, 4, 5, 6, 7}
+  {
+    data := []int{1, 2, 3, 4, 5, 6, 7}
 
-  it := Window_Iterator(int) {
-    slice = data,
-    size  = 2,
+    it := Window_Iterator(int) {
+      slice = data,
+      size  = 2,
+    }
+
+    for val in window_iterator(int, &it) {
+      fmt.println(val)
+    }
   }
 
-  for val in window_iterator(int, &it) {
-    fmt.println(val)
+  {
+    data := "123456"
+
+    it := Window_Iterator(string) {
+      slice = data,
+      size  = 2,
+    }
+
+    for val in window_iterator(string, &it) {
+      fmt.println(val)
+    }
   }
 }

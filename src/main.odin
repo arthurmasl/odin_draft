@@ -1,25 +1,49 @@
 package main
 
-import pq "core:container/priority_queue"
 import "core:fmt"
 
-main :: proc() {
-  less :: proc(a, b: int) -> bool {
-    return a < b
+Window_Iterator :: struct($T: typeid) {
+  slice: T,
+  size:  int,
+  index: int,
+}
+
+window_iterator :: proc($T: typeid, it: ^Window_Iterator(T)) -> (window: T, ok: bool) {
+  if it.index + it.size > len(it.slice) {
+    when T == string do return "", false
+    when T != string do return nil, false
   }
 
-  q: pq.Priority_Queue(int)
-  pq.init(&q, less, pq.default_swap_proc(int))
+  window = it.slice[it.index:it.index + it.size]
+  it.index += 1
 
-  pq.push(&q, 50)
-  pq.push(&q, 10)
-  pq.push(&q, 30)
-  pq.push(&q, 5)
+  return window, true
+}
 
-  fmt.println(pq.pop(&q))
-  fmt.println(pq.pop(&q))
-  fmt.println(pq.pop(&q))
-  fmt.println(pq.pop(&q))
+main :: proc() {
+  {
+    data := []int{1, 2, 3, 4, 5, 6, 7}
 
-  // fmt.println(pq.peek(q))
+    it := Window_Iterator([]int) {
+      slice = data,
+      size  = 2,
+    }
+
+    for val in window_iterator([]int, &it) {
+      fmt.println(val)
+    }
+  }
+
+  {
+    data := "abcdef"
+
+    it := Window_Iterator(string) {
+      slice = data,
+      size  = 2,
+    }
+
+    for val in window_iterator(string, &it) {
+      fmt.println(val)
+    }
+  }
 }
